@@ -1,0 +1,35 @@
+:root {
+  /* Warna Dasar */
+  --color-primary: #740001;       /* Merah Utama */
+  --color-primary-dark: #4a0000;  /* Merah Gelap */
+  --color-background: #EDF3F6;    /* Abu-abu Porcelain */
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+
+  /* Warna Aksen & Status */
+  --color-accent: #3385FF;        /* Biru Dodger */
+  --color-success: #00b894;       /* Hijau QC */
+  --color-warning: #f1c40f;       /* Kuning */
+  --color-danger: #cc0000;        /* Merah Alert */
+}
+
+body {
+  background-color: var(--color-primary);
+  color: var(--color-black);
+}
+
+/* Helper Classes */
+.bg-utama { background-color: var(--color-primary); }
+.text-utama { color: var(--color-primary); }
+
+.bg-latar { background-color: var(--color-background); }
+.text-latar { color: var(--color-background); }
+
+.bg-aksen { background-color: var(--color-accent); }
+.text-aksen { color: var(--color-accent); }
+
+.border-utama { border-color: var(--color-primary); }
+
+.fab-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
