@@ -1,64 +1,34 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>Login Sistem QC - PT Misaja Mitra</title>
-</head>
-<body class="bg-[#740001] min-h-screen flex items-center justify-center p-6">
-
-    <div class="bg-white w-full max-w-sm rounded-[30px] shadow-2xl p-8 flex flex-col items-center">
-        
-        <div class="relative w-16 h-10 border-2 border-[#b30000] flex items-center justify-center mb-4" 
-             style="clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);">
-            <span class="text-[#b30000] font-serif font-bold text-2xl mb-1">m</span>
-        </div>
-
-        <h1 class="text-2xl font-bold text-black text-center leading-tight">Login Sistem QC</h1>
-        <p class="text-gray-500 text-sm mb-8">PT Misaja Mitra</p>
-
-        <form class="w-full space-y-5">
-            
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-800 ml-1">
-                    Nomor Induk Pegawai (NIP)
-                </label>
-                <input type="text" 
-                       placeholder="Masukkan NIP Anda" 
-                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-800 placeholder-gray-300 text-sm">
-            </div>
-
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-800 ml-1">
-                    Kata Sandi
-                </label>
-                <div class="relative flex items-center">
-                    <input type="password" 
-                           placeholder="Masukkan Kata Sandi" 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-800 placeholder-gray-300 text-sm">
-                    <div class="absolute right-4 text-gray-400 cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" 
-                    class="w-full py-4 bg-gradient-to-r from-[#cc0000] to-[#600000] text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition-transform mt-2 tracking-wider">
-                LOGIN
-            </button>
-
-            <div class="pt-2">
-                <a href="#" class="text-blue-500 text-sm font-medium hover:underline">
-                    Lupa Kata Sandi?
-                </a>
-            </div>
-            
-        </form>
+    <meta http-equiv="refresh" content="3;url=login.php" />
+    <title>Sistem QC - PT Misaja Mitra</title>
+  </head>
+  <body
+    class="bg-[#740001] min-h-screen flex flex-col items-center justify-center"
+  >
+    <div class="animate-bounce mb-6">
+      <div class="mb-6 flex justify-center">
+        <img
+          src="assets/logo-misaja-mitra.png"
+          alt="Logo PT Misaja Mitra"
+          class="w-24 h-auto object-contain"
+        />
+      </div>
     </div>
 
-</body>
+    <h1 class="text-white text-xl font-semibold tracking-widest animate-pulse">
+      PT MISAJA MITRA
+    </h1>
+    <p class="text-red-300 text-sm mt-2 font-light">Quality Control System</p>
+
+    <div class="mt-10">
+      <div
+        class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"
+      ></div>
+    </div>
+  </body>
 </html>
