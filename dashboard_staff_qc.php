@@ -1,6 +1,32 @@
 <?php
+include 'auth.php';
+
+// Cek apakah sudah login dan apakah jabatannya 'staff'
+if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'staff') {
+    header("Location: login.php?pesan=belum_login");
+    exit();
+}
+
+// Ambil Data Seluruh Staff
+$res_cacat = mysqli_query($conn, "SELECT COUNT(*) as total FROM laporancacat");
+$count_cacat = mysqli_fetch_assoc($res_cacat)['total'];
+
+$res_non = mysqli_query($conn, "SELECT COUNT(*) as total FROM laporannoncacat");
+$count_non = mysqli_fetch_assoc($res_non)['total'];
+
+// Ambil Daftar Laporan
+$daftar_cacat = mysqli_query($conn, "SELECT laporancacat.*, users.nip as nip_staff
+                                     FROM laporancacat 
+                                     LEFT JOIN users ON laporancacat.id_user = users.id 
+                                     ORDER BY laporancacat.id DESC");
+
+$daftar_non_cacat = mysqli_query($conn, "SELECT laporannoncacat.*, users.nip as nip_staff
+                                         FROM laporannoncacat 
+                                         LEFT JOIN users ON laporannoncacat.id_user = users.id 
+                                         ORDER BY laporannoncacat.id DESC");
+
 $title = "Staff QC Dashboard";
-$subtitle = "Staff QC Inspection - ST19822031";
+$subtitle = "QC Inspection Panel - " . $_SESSION['nama'];
 ?>
 
 <!DOCTYPE html>
@@ -10,7 +36,7 @@ $subtitle = "Staff QC Inspection - ST19822031";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff QC Dashboard</title>
-    <?php include 'config.php'; ?>
+    <?php include 'ui_config.php'; ?>
 </head>
 
 <body class="font-sans bg-utama">
@@ -36,7 +62,7 @@ $subtitle = "Staff QC Inspection - ST19822031";
                     </svg>
                     Total Laporan <br> Cacat
                 </div>
-                <span class="text-5xl font-bold text-gray-600">1</span>
+                <span class="text-5xl font-bold text-gray-600"><?= $count_cacat; ?></span>
             </div>
 
             <div class="bg-white rounded-2xl py-16 flex flex-col items-center border border-gray-100 shadow-[0_4px_15px_rgba(0,0,0,0.1)]">
@@ -47,24 +73,15 @@ $subtitle = "Staff QC Inspection - ST19822031";
                     </svg>
                     Total Laporan <br> Non-Cacat
                 </div>
-                <span class="text-5xl font-bold text-gray-600">0</span>
+                <span class="text-5xl font-bold text-gray-600"><?= $count_non; ?></span>
             </div>
         </div>
 
         <div class="bg-utama rounded-2xl flex overflow-hidden mb-6 p-1 shadow-xl">
             <button onclick="filterStaffLaporan('cacat')" id="tab-cacat" class="tab-btn flex-1 py-3 flex items-center justify-center gap-2 text-white font-bold text-sm border-b-4 border-white">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
-                    <path d="M12 9v4"></path>
-                    <path d="M12 17h.01"></path>
-                </svg>
                 Laporan Cacat
             </button>
             <button onclick="filterStaffLaporan('non-cacat')" id="tab-non-cacat" class="tab-btn flex-1 py-3 flex items-center justify-center gap-2 text-white/70 font-bold text-sm border-b-4 border-transparent">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-                    <path d="M18 6 7 17l-5-5"></path>
-                    <path d="m22 10-7.5 7.5L13 16"></path>
-                </svg>
                 Laporan Non-Cacat
             </button>
         </div>
@@ -82,18 +99,27 @@ $subtitle = "Staff QC Inspection - ST19822031";
                         </tr>
                     </thead>
                     <tbody id="staff-table-body">
-                        <tr class="staff-row border-b last:border-0" data-type="cacat">
-                            <td class="py-5 font-bold text-xs text-black">1</td>
-                            <td class="py-5 text-xs text-black">US21234</td>
-                            <td class="py-5 text-xs text-black">ST19822031</td>
-                            <td class="py-5 text-xs text-black">Ringan</td>
-                        </tr>
-                        <tr class="staff-row border-b last:border-0 hidden" data-type="non-cacat">
-                            <td class="py-5 font-bold text-xs text-black">2</td>
-                            <td class="py-5 text-xs text-black">US99999</td>
-                            <td class="py-5 text-xs text-black">ST19822031</td>
-                            <td class="py-5 text-xs text-black">Normal</td>
-                        </tr>
+                        <?php while ($row_cacat = mysqli_fetch_assoc($daftar_cacat)): ?>
+                            <tr class="staff-row border-b last:border-0 hover:bg-gray-50 cursor-pointer transition-colors"
+                                data-type="cacat"
+                                onclick="window.location.href='detail_laporan.php?id=<?= $row_cacat['id']; ?>&type=cacat'">
+                                <td class="py-5 font-bold text-xs text-black"><?= $row_cacat['id']; ?></td>
+                                <td class="py-5 text-xs text-black"><?= $row_cacat['batch_number']; ?></td>
+                                <td class="py-5 text-xs text-black"><?= $row_cacat['nip_staff'] ?? 'ST19822031'; ?></td>
+                                <td class="py-5 text-xs text-black"><?= $row_cacat['tingkat_keparahan'] ?? 'Ringan'; ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+
+                        <?php while ($row_non = mysqli_fetch_assoc($daftar_non_cacat)): ?>
+                            <tr class="staff-row border-b last:border-0 hidden hover:bg-gray-50 cursor-pointer transition-colors"
+                                data-type="non-cacat"
+                                onclick="window.location.href='detail_laporan.php?id=<?= $row_non['id']; ?>&type=non-cacat'">
+                                <td class="py-5 font-bold text-xs text-black"><?= $row_non['id']; ?></td>
+                                <td class="py-5 text-xs text-black"><?= $row_non['batch_number']; ?></td>
+                                <td class="py-5 text-xs text-black"><?= $row_non['nip_staff'] ?? 'ST19822031'; ?></td>
+                                <td class="py-5 text-xs text-black">Normal</td>
+                            </tr>
+                        <?php endwhile; ?>
                     </tbody>
                 </table>
 
@@ -106,7 +132,6 @@ $subtitle = "Staff QC Inspection - ST19822031";
 
         <div class="fixed bottom-10 left-0 right-0 flex justify-center items-center z-50">
             <div class="relative flex items-center justify-center">
-
                 <a href="form_laporan.php?type=non-cacat" id="btnNonCacat" class="absolute opacity-0 -translate-x-0 fab-transition pointer-events-none flex flex-col items-center gap-1">
                     <div class="bg-gradient-to-br from-green-400 to-green-600 p-4 rounded-2xl shadow-lg active:scale-90">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -130,7 +155,6 @@ $subtitle = "Staff QC Inspection - ST19822031";
                     </div>
                     <span class="text-[10px] font-extrabold text-orange-700 uppercase">Cacat</span>
                 </a>
-
             </div>
         </div>
     </main>
@@ -149,7 +173,6 @@ $subtitle = "Staff QC Inspection - ST19822031";
                 btnNonCacat.classList.replace('opacity-0', 'opacity-100');
                 btnNonCacat.classList.replace('-translate-x-0', '-translate-x-24');
                 btnNonCacat.classList.remove('pointer-events-none');
-
                 btnCacat.classList.replace('opacity-0', 'opacity-100');
                 btnCacat.classList.replace('translate-x-0', 'translate-x-24');
                 btnCacat.classList.remove('pointer-events-none');
@@ -158,7 +181,6 @@ $subtitle = "Staff QC Inspection - ST19822031";
                 btnNonCacat.classList.replace('opacity-100', 'opacity-0');
                 btnNonCacat.classList.replace('-translate-x-24', '-translate-x-0');
                 btnNonCacat.classList.add('pointer-events-none');
-
                 btnCacat.classList.replace('opacity-100', 'opacity-0');
                 btnCacat.classList.replace('translate-x-24', 'translate-x-0');
                 btnCacat.classList.add('pointer-events-none');
@@ -172,7 +194,6 @@ $subtitle = "Staff QC Inspection - ST19822031";
             const dynamicCol = document.getElementById('col-dynamic');
             let count = 0;
 
-            // 1. Update UI Tab
             tabs.forEach(tab => {
                 if (tab.id === `tab-${type}`) {
                     tab.classList.remove('text-white/70', 'border-transparent');
@@ -183,7 +204,6 @@ $subtitle = "Staff QC Inspection - ST19822031";
                 }
             });
 
-            // 2. Update Judul dan Header Kolom
             if (type === 'cacat') {
                 title.innerText = "Daftar Laporan Cacat";
                 dynamicCol.innerText = "Keparahan";
@@ -192,7 +212,6 @@ $subtitle = "Staff QC Inspection - ST19822031";
                 dynamicCol.innerText = "Keterangan";
             }
 
-            // 3. Filter Baris Tabel
             rows.forEach(row => {
                 if (row.getAttribute('data-type') === type) {
                     row.classList.remove('hidden');
@@ -202,7 +221,6 @@ $subtitle = "Staff QC Inspection - ST19822031";
                 }
             });
 
-            // 4. Handle State Kosong
             const emptyState = document.getElementById('staff-empty-state');
             if (count === 0) {
                 emptyState.classList.remove('hidden');
