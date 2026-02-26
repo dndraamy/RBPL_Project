@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bantuan Login - PT Misaja Mitra</title>
-    <?php include 'config.php'; ?>
+    <?php include 'ui_config.php'; ?>
 </head>
 
 <body class="bg-latar min-h-screen flex items-center justify-center p-6">

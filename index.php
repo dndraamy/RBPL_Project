@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="refresh" content="3;url=login.php" />
   <title>Sistem QC - PT Misaja Mitra</title>
-  <?php include 'config.php'; ?>
+  <?php include 'ui_config.php'; ?>
 </head>
 
 <body class="bg-utama min-h-screen flex flex-col items-center justify-center">

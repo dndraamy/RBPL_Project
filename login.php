@@ -1,22 +1,3 @@
-<?php
-if (isset($_POST['login'])) {
-  $nip = $_POST['nip'];
-  $password = $_POST['password'];
-
-  $prefix = strtoupper(substr($nip, 0, 2));
-
-  if ($prefix === 'KA') {
-    header("Location: dashboard_kepala_qc.php");
-    exit();
-  } elseif ($prefix === 'ST') {
-    header("Location: dashboard_staff_qc.php");
-    exit();
-  } else {
-    echo "<script>alert('NIP tidak valid!');</script>";
-  }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="id">
 
@@ -24,11 +5,17 @@ if (isset($_POST['login'])) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login Sistem QC - PT Misaja Mitra</title>
-  <?php include 'config.php'; ?>
+  <?php include 'ui_config.php'; ?>
 </head>
 
 <body class="bg-utama min-h-screen flex items-center justify-center p-6">
   <div class="bg-white w-full max-w-sm rounded-[30px] shadow-2xl p-8 flex flex-col items-center">
+
+  <?php if(isset($_GET['pesan']) && $_GET['pesan'] == 'gagal'): ?>
+            <div class="bg-red-100 text-red-600 p-3 rounded-lg mb-4 text-xs w-full text-center">
+                NIP atau Password Salah!
+            </div>
+        <?php endif; ?>
 
     <div class="mb-4">
       <img
@@ -42,7 +29,7 @@ if (isset($_POST['login'])) {
     </h1>
     <p class="text-gray-400 text-sm mb-8 font-medium">PT Misaja Mitra</p>
 
-    <form action="" method="POST" class="w-full space-y-5">
+    <form action="auth.php" method="POST" class="w-full space-y-5">
       <div class="space-y-2">
         <label class="block text-sm font-bold text-gray-700 ml-1">Nomor Induk Pegawai (NIP)</label>
         <input type="text" name="nip" required placeholder="Masukkan NIP Anda"
