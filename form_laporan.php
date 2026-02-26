@@ -1,6 +1,6 @@
 <?php
 $title = "Isi Formulir";
-$subtitle = "Lorem ipsum";
+$subtitle = "Formulir Digital Laporan Quality Control";
 
 $type = isset($_GET['type']) ? $_GET['type'] : 'cacat';
 
@@ -26,7 +26,7 @@ if ($type === 'non-cacat') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $judulForm; ?></title>
-    <?php include 'config.php'; ?>
+    <?php include 'ui_config.php'; ?>
 </head>
 
 <body class="font-sans bg-utama text-gray-800">
@@ -36,19 +36,20 @@ if ($type === 'non-cacat') {
     <main class="bg-white rounded-t-[40px] mt-[20px] min-h-[calc(100vh-80px)] px-6 pt-10 pb-16">
 
         <div class="flex items-center gap-4 mb-8">
-            <button onclick="window.history.back()" class="bg-utama text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+            <a href="dashboard_staff_qc.php" class="bg-utama text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m15 18-6-6 6-6"></path>
                 </svg>
-            </button>
+            </a>
 
             <div class="flex-1 bg-gradient-to-r <?php echo $gradasiWarna; ?> text-white py-3 px-6 rounded-full text-center font-bold text-lg shadow-md">
                 <?php echo $judulForm; ?>
             </div>
         </div>
 
-        <form action="dashboard_staff_qc.php" method="POST" class="space-y-5">
-            <input type="text" name="batch_number" placeholder="Nomor Batch/Produksi" class="w-full p-4 border border-gray-300 rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-utama">
+        <form action="proses_laporan.php" method="POST" class="space-y-5">
+            <input type="hidden" name="type" value="<?php echo $type; ?>">
+            <input type="text" name="batch_number" placeholder="Nomor Batch/Produksi" required class="w-full p-4 border border-gray-300 rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-utama">
 
             <div class="relative">
                 <select name="jenis_udang" class="w-full p-4 border border-gray-300 rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.1)] appearance-none text-gray-500 focus:outline-none focus:ring-2 focus:ring-utama bg-white">
