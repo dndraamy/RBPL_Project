@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 26, 2026 at 03:02 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Waktu pembuatan: 26 Feb 2026 pada 09.47
+-- Versi server: 10.4.32-MariaDB
+-- Versi PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,7 +24,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `laporancacat`
+-- Struktur dari tabel `laporancacat`
 --
 
 CREATE TABLE `laporancacat` (
@@ -44,19 +44,19 @@ CREATE TABLE `laporancacat` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `laporancacat`
+-- Dumping data untuk tabel `laporancacat`
 --
 
 INSERT INTO `laporancacat` (`id`, `id_user`, `batch_number`, `jenis_udang`, `tanggal`, `kuantitas`, `kriteria_cacat`, `keparahan`, `deskripsi`, `kategori`, `status`, `catatan_kepala`, `created_at`) VALUES
-(1, 3, 'BTC-2025-001', 'Udang Vaname', '2025-05-25', 15, 'Kulit Lunak', 'Ringan', 'Ditemukan beberapa udang dengan kulit yang belum keras sempurna.', 'cacat', 'menunggu', NULL, '2026-02-26 01:58:09'),
-(2, 4, 'BTC-2025-002', 'Udang Windu', '2025-05-24', 45, 'Perubahan Warna', 'Berat', 'Warna udang kemerahan pucat, indikasi suhu penyimpanan tidak stabil.', 'cacat', 'menunggu', NULL, '2026-02-26 01:58:09'),
-(3, 3, 'BTC-2025-003', 'Udang Vaname', '2025-05-23', 28, 'Rusak Fisik', 'Sedang', 'Ekor dan kaki banyak yang patah saat proses sortir mesin.', 'cacat', 'diterima', NULL, '2026-02-26 01:58:09'),
-(4, 5, 'BTC-2025-004', 'Udang Windu', '2025-05-25', 8, 'Ukuran Tidak Seragam', 'Ringan', 'Hanya sedikit variasi ukuran, masih dalam batas toleransi.', 'cacat', 'menunggu', NULL, '2026-02-26 01:58:10');
+(1, 3, 'BTC-2025-001', 'Udang Vaname', '2025-05-25', 15, 'Kulit Lunak', 'Ringan', 'Ditemukan beberapa udang dengan kulit yang belum keras sempurna.', 'cacat', 'ditolak', NULL, '2026-02-26 01:58:09'),
+(2, 4, 'BTC-2025-002', 'Udang Windu', '2025-05-25', 45, 'Perubahan Warna', 'Berat', 'Warna udang kemerahan pucat, indikasi suhu penyimpanan tidak stabil.', 'cacat', 'menunggu', NULL, '2026-02-26 01:58:09'),
+(3, 3, 'BTC-2025-003', 'Udang Vaname', '2025-05-25', 28, 'Rusak Fisik', 'Sedang', 'Ekor dan kaki banyak yang patah saat proses sortir mesin.', 'cacat', 'diterima', 'maap ditolak tp boonk', '2026-02-26 01:58:09'),
+(4, 5, 'BTC-2025-004', 'Udang Windu', '2025-05-25', 8, 'Ukuran Tidak Seragam', 'Ringan', 'Hanya sedikit variasi ukuran, masih dalam batas toleransi.', 'cacat', 'diterima', 'terima deh', '2026-02-26 01:58:10');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `laporannoncacat`
+-- Struktur dari tabel `laporannoncacat`
 --
 
 CREATE TABLE `laporannoncacat` (
@@ -66,27 +66,24 @@ CREATE TABLE `laporannoncacat` (
   `jenis_udang` varchar(50) NOT NULL,
   `tanggal` date NOT NULL,
   `kuantitas` int(11) NOT NULL,
-  `ukuran_sampel` int(11) NOT NULL,
   `deskripsi` text DEFAULT NULL,
-  `status` enum('menunggu','diterima','ditolak') DEFAULT 'menunggu',
-  `catatan_kepala` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `laporannoncacat`
+-- Dumping data untuk tabel `laporannoncacat`
 --
 
-INSERT INTO `laporannoncacat` (`id`, `id_user`, `batch_number`, `jenis_udang`, `tanggal`, `kuantitas`, `ukuran_sampel`, `deskripsi`, `status`, `catatan_kepala`, `created_at`) VALUES
-(1, 3, 'BTC-NC-001', 'Udang Vaname', '2025-05-25', 5000, 100, 'Kualitas panen sangat prima, ukuran seragam size 30.', 'diterima', NULL, '2026-02-26 02:02:23'),
-(2, 4, 'BTC-NC-002', 'Udang Windu', '2025-05-24', 2500, 50, 'Warna cerah, tekstur daging padat. Lulus uji organoleptik.', 'menunggu', NULL, '2026-02-26 02:02:23'),
-(3, 5, 'BTC-NC-003', 'Udang Vaname', '2025-05-26', 4000, 100, 'Terdapat sedikit bau lumpur pada sampel.', 'ditolak', 'Lakukan pencucian ulang dan sampling kembali.', '2026-02-26 02:02:23'),
-(4, 3, 'BTC-NC-004', 'Udang Windu', '2025-05-25', 1500, 40, 'Kondisi fresh, langsung masuk cold storage.', 'menunggu', NULL, '2026-02-26 02:02:23');
+INSERT INTO `laporannoncacat` (`id`, `id_user`, `batch_number`, `jenis_udang`, `tanggal`, `kuantitas`, `deskripsi`, `created_at`) VALUES
+(1, 3, 'BTC-NC-001', 'Udang Vaname', '2025-05-25', 5000, 'Kualitas panen sangat prima, ukuran seragam size 30.', '2026-02-26 02:02:23'),
+(2, 4, 'BTC-NC-002', 'Udang Windu', '2025-05-24', 2500, 'Warna cerah, tekstur daging padat. Lulus uji organoleptik.', '2026-02-26 02:02:23'),
+(3, 5, 'BTC-NC-003', 'Udang Vaname', '2025-05-26', 4000, 'Terdapat sedikit bau lumpur pada sampel.', '2026-02-26 02:02:23'),
+(4, 3, 'BTC-NC-004', 'Udang Windu', '2025-05-25', 1500, 'Kondisi fresh, langsung masuk cold storage.', '2026-02-26 02:02:23');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `users`
+-- Struktur dari tabel `users`
 --
 
 CREATE TABLE `users` (
@@ -101,7 +98,7 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `users`
+-- Dumping data untuk tabel `users`
 --
 
 INSERT INTO `users` (`id`, `nip`, `password`, `nama_lengkap`, `jabatan`, `email`, `no_telp`, `alamat`) VALUES
@@ -121,21 +118,21 @@ INSERT INTO `users` (`id`, `nip`, `password`, `nama_lengkap`, `jabatan`, `email`
 --
 
 --
--- Indexes for table `laporancacat`
+-- Indeks untuk tabel `laporancacat`
 --
 ALTER TABLE `laporancacat`
   ADD PRIMARY KEY (`id`),
   ADD KEY `id_user` (`id_user`);
 
 --
--- Indexes for table `laporannoncacat`
+-- Indeks untuk tabel `laporannoncacat`
 --
 ALTER TABLE `laporannoncacat`
   ADD PRIMARY KEY (`id`),
   ADD KEY `id_user` (`id_user`);
 
 --
--- Indexes for table `users`
+-- Indeks untuk tabel `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
@@ -143,39 +140,39 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT untuk tabel yang dibuang
 --
 
 --
--- AUTO_INCREMENT for table `laporancacat`
+-- AUTO_INCREMENT untuk tabel `laporancacat`
 --
 ALTER TABLE `laporancacat`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT for table `laporannoncacat`
+-- AUTO_INCREMENT untuk tabel `laporannoncacat`
 --
 ALTER TABLE `laporannoncacat`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- AUTO_INCREMENT for table `users`
+-- AUTO_INCREMENT untuk tabel `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
--- Constraints for dumped tables
+-- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
 --
 
 --
--- Constraints for table `laporancacat`
+-- Ketidakleluasaan untuk tabel `laporancacat`
 --
 ALTER TABLE `laporancacat`
   ADD CONSTRAINT `laporancacat_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `laporannoncacat`
+-- Ketidakleluasaan untuk tabel `laporannoncacat`
 --
 ALTER TABLE `laporannoncacat`
   ADD CONSTRAINT `laporannoncacat_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `users` (`id`) ON DELETE CASCADE;
