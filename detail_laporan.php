@@ -8,7 +8,7 @@ $id = mysqli_real_escape_string($conn, $_GET['id']);
 $type = mysqli_real_escape_string($conn, $_GET['type']);
 $role = $_SESSION['jabatan'];
 
-// --- LOGIKA UPDATE STATUS & CATATAN (Hanya untuk Kepala QC) ---
+// LOGIKA UPDATE STATUS & CATATAN (Hanya untuk Kepala QC)
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['proses_laporan']) && $role === 'kepala') {
     $status_baru = mysqli_real_escape_string($conn, $_POST['status']);
     $catatan_kepala = mysqli_real_escape_string($conn, $_POST['catatan_kepala']);
@@ -54,7 +54,16 @@ if (!$data) {
 
         <div class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-3">
-                <a href="<?= $role === 'kepala' ? 'dashboard_kepala_qc.php' : 'dashboard_staff_qc.php' ?>" class="bg-gray-100 text-utama w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 transition-all">
+                <?php
+                $back_link = 'dashboard_staff_qc.php'; // Default fallback
+                if ($role === 'kepala') {
+                    $back_link = 'dashboard_kepala_qc.php';
+                } elseif ($role === 'manajer' || $role === 'supervisor') {
+                    $back_link = 'dashboard_manajer_supervisor.php';
+                }
+                ?>
+
+                <a href="<?= $back_link ?>" class="bg-gray-100 text-utama w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m15 18-6-6 6-6" />
                     </svg>
