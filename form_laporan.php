@@ -1,4 +1,12 @@
 <?php
+include 'auth.php';
+
+// Cek apakah sudah login dan apakah jabatannya 'staff'
+if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'staff') {
+    header("Location: login.php?pesan=belum_login");
+    exit();
+}
+
 $title = "Isi Formulir";
 $subtitle = "Formulir Digital Laporan Quality Control";
 
