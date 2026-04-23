@@ -8,6 +8,40 @@ if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'admin') {
 }
 
 $admin_name = isset($_SESSION['nama']) ? $_SESSION['nama'] : "Admin";
+
+// --- LOGIKA AGREGASI DATA ---
+$res_user = mysqli_query($conn, "SELECT COUNT(*) as total FROM users");
+$total_user = mysqli_fetch_assoc($res_user)['total'];
+
+$res_cacat = mysqli_query($conn, "SELECT COUNT(*) as total FROM laporancacat");
+$res_non = mysqli_query($conn, "SELECT COUNT(*) as total FROM laporannoncacat");
+$total_laporan = mysqli_fetch_assoc($res_cacat)['total'] + mysqli_fetch_assoc($res_non)['total'];
+
+// --- PBI-045: IMPLEMENTASI AUTO BACKUP (SCHEDULER) ---
+$folder_backup = "backups/";
+if (!is_dir($folder_backup)) { 
+    mkdir($folder_backup, 0777, true); 
+}
+
+$file_hari_ini = $folder_backup . "auto_backup_" . date('Y-m-d') . ".sql";
+$last_backup_display = "Belum Ada";
+$last_backup_time = "-";
+
+// Cek file backup terbaru
+$files = glob($folder_backup . "*.sql");
+if ($files) {
+    array_multisort(array_map('filemtime', $files), SORT_DESC, $files);
+    $last_backup_display = date('d-m-Y', filemtime($files[0]));
+    $last_backup_time = date('H.i', filemtime($files[0])) . " WIB";
+}
+
+// Jalankan auto backup jika belum ada
+if (!file_exists($file_hari_ini)) {
+    $dump_path = "C:\\xampp\\mysql\\bin\\mysqldump";
+    // Gunakan variabel koneksi dari auth.php
+    $cmd = "$dump_path --user=$user --password=$pass --host=$host $db > $file_hari_ini";
+    exec($cmd);
+}
 ?>
 
 <!DOCTYPE html>
@@ -74,12 +108,12 @@ $admin_name = isset($_SESSION['nama']) ? $_SESSION['nama'] : "Admin";
 
                 <div class="bg-white rounded-3xl p-6 md:p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 transform transition hover:scale-105">
                     <p class="text-gray-400 font-bold text-xs mb-2 uppercase tracking-widest">Total User</p>
-                    <h2 class="text-4xl md:text-5xl font-bold text-black tracking-tighter">21</h2>
+                    <h2 class="text-4xl md:text-5xl font-bold text-black tracking-tighter"><?= $total_user; ?></h2>
                 </div>
 
                 <div class="bg-white rounded-3xl p-6 md:p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 transform transition hover:scale-105">
                     <p class="text-gray-400 font-bold text-xs mb-2 uppercase tracking-widest">Total Laporan QC</p>
-                    <h2 class="text-4xl md:text-5xl font-bold text-black tracking-tighter">10</h2>
+                    <h2 class="text-4xl md:text-5xl font-bold text-black tracking-tighter"><?= $total_laporan; ?></h2>
                 </div>
 
                 <div class="bg-white rounded-3xl p-6 md:p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 transform transition hover:scale-105">
@@ -89,8 +123,8 @@ $admin_name = isset($_SESSION['nama']) ? $_SESSION['nama'] : "Admin";
 
                 <div class="bg-white rounded-3xl p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 transform transition hover:scale-105">
                     <p class="text-gray-400 font-bold text-xs mb-2 uppercase tracking-widest">BackUp Data Terakhir</p>
-                    <h2 class="text-xl md:text-2xl font-bold text-black">17-11-2025</h2>
-                    <p class="text-[10px] text-gray-400 uppercase font-medium">Pukul 12.31 WIB</p>
+                    <h2 class="text-xl md:text-2xl font-bold text-black"><?= $last_backup_display; ?></h2>
+                    <p class="text-[10px] text-gray-400 uppercase font-medium">Pukul <?= $last_backup_time; ?></p>
                 </div>
 
             </div>
