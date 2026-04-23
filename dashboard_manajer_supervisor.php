@@ -13,6 +13,33 @@ if ($_SESSION['jabatan'] !== 'manajer' && $_SESSION['jabatan'] !== 'supervisor')
     exit();
 }
 
+// --- LOGIKA DINAMIS PBI-028 (DIBUAT OLEH IKKE) ---
+
+// 1. Hitung Total Semua Laporan
+$res_total_cacat = mysqli_query($conn, "SELECT COUNT(*) as total FROM laporancacat");
+$total_cacat = mysqli_fetch_assoc($res_total_cacat)['total'];
+
+$res_total_non = mysqli_query($conn, "SELECT COUNT(*) as total FROM laporannoncacat");
+$total_non = mysqli_fetch_assoc($res_total_non)['total'];
+
+$total_semua = $total_cacat + $total_non;
+
+// 2. Hitung Tingkat Cacat (Defect Rate)
+$defect_rate = ($total_semua > 0) ? ($total_cacat / $total_semua) * 100 : 0;
+
+// 3. Hitung Rata-rata Keparahan (Konversi Teks: Ringan=1, Sedang=2, Berat=3)
+$query_avg = "SELECT AVG(
+                CASE 
+                    WHEN keparahan = 'ringan' THEN 1 
+                    WHEN keparahan = 'sedang' THEN 2 
+                    WHEN keparahan = 'berat' THEN 3 
+                    ELSE 0 
+                END
+              ) as rata_rata FROM laporancacat WHERE keparahan IS NOT NULL AND keparahan != ''";
+$res_avg_severity = mysqli_query($conn, $query_avg);
+$avg_severity = mysqli_fetch_assoc($res_avg_severity)['rata_rata'];
+$avg_display = ($avg_severity > 0) ? number_format($avg_severity, 1) : "0";
+
 // Ambil data untuk tabel
 $daftar_cacat = mysqli_query($conn, "SELECT * FROM laporancacat ORDER BY id DESC");
 $daftar_non_cacat = mysqli_query($conn, "SELECT * FROM laporannoncacat ORDER BY id DESC");
@@ -29,6 +56,7 @@ $subtitle = "QC Overview - Monitoring Mode";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supervisor Dashboard</title>
     <?php include 'ui_config.php'; ?>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="font-sans bg-utama">
@@ -46,7 +74,7 @@ $subtitle = "QC Overview - Monitoring Mode";
                     </div>
                     <span class="text-[9px] leading-tight font-bold text-gray-700">Total Semua<br>Laporan</span>
                 </div>
-                <span class="text-2xl font-bold text-gray-700">1</span>
+                <span class="text-2xl font-bold text-gray-700"><?= $total_semua; ?></span>
             </div>
 
             <div class="bg-white rounded-2xl p-3 flex flex-col items-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] border border-gray-50">
@@ -58,7 +86,7 @@ $subtitle = "QC Overview - Monitoring Mode";
                     </div>
                     <span class="text-[9px] leading-tight font-bold text-gray-700">Tingkat Cacat<br>(Defect Rate)</span>
                 </div>
-                <span class="text-2xl font-bold text-gray-700">5%</span>
+                <span class="text-2xl font-bold text-gray-700"><?= round($defect_rate); ?>%</span>
             </div>
 
             <div class="bg-white rounded-2xl p-3 flex flex-col items-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] border border-gray-50">
@@ -70,7 +98,7 @@ $subtitle = "QC Overview - Monitoring Mode";
                     </div>
                     <span class="text-[9px] leading-tight font-bold text-gray-700">Rata-rata<br>Keparahan</span>
                 </div>
-                <span class="text-2xl font-bold text-gray-700">2</span>
+                <span class="text-2xl font-bold text-gray-700"><?= $avg_display; ?></span>
             </div>
         </div>
 
@@ -85,22 +113,22 @@ $subtitle = "QC Overview - Monitoring Mode";
             </div>
 
             <div class="space-y-3">
-                <button id="btn-csv-cacat" class="w-full bg-utama text-white font-bold py-3 px-4 rounded-xl flex items-center gap-3 shadow-md active:scale-95 transition-transform">
+                <a href="export_csv.php?type=cacat" id="btn-csv-cacat" class="w-full bg-utama text-white font-bold py-3 px-4 rounded-xl flex items-center gap-3 shadow-md active:scale-95 transition-transform cursor-pointer text-sm">
                     <div class="bg-white text-utama p-1 rounded">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
                         </svg>
                     </div>
                     Generate Cacat CSV
-                </button>
-                <button id="btn-csv-non-cacat" class="w-full bg-utama text-white font-bold py-3 px-4 rounded-xl flex items-center gap-3 shadow-md active:scale-95 transition-transform">
+                </a>
+                <a href="export_csv.php?type=non-cacat" id="btn-csv-non-cacat" class="w-full bg-utama text-white font-bold py-3 px-4 rounded-xl flex items-center gap-3 shadow-md active:scale-95 transition-transform cursor-pointer text-sm">
                     <div class="bg-white text-utama p-1 rounded">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
                         </svg>
                     </div>
                     Generate Non-Cacat CSV
-                </button>
+                </a>
             </div>
         </div>
 
@@ -165,11 +193,9 @@ $subtitle = "QC Overview - Monitoring Mode";
                 <div id="empty-state" class="hidden py-10 text-center text-gray-400">
                     Tidak ada data untuk kategori ini.
                 </div>
-
                 <div class="h-20"></div>
             </div>
         </div>
-
     </main>
 
     <script>
@@ -188,7 +214,6 @@ $subtitle = "QC Overview - Monitoring Mode";
             } else {
                 btnCacat.classList.remove('hidden');
                 btnNonCacat.classList.remove('hidden');
-                // Default ke tab cacat saat pilih "Semua"
                 filterLaporan('cacat');
             }
         }
@@ -227,5 +252,4 @@ $subtitle = "QC Overview - Monitoring Mode";
         }
     </script>
 </body>
-
 </html>
