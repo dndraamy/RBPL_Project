@@ -1,7 +1,7 @@
 <?php
 include 'auth.php';
 
-// Pastikan hanya Admin yang bisa akses proses ini
+// hanya Admin yang bisa akses proses ini
 if ($_SESSION['jabatan'] !== 'admin') {
     header("Location: login.php?pesan=hak_akses_ditolak");
     exit();
@@ -27,7 +27,6 @@ while ($row = mysqli_fetch_assoc($result_cacat)) {
     fputcsv($output, $row);
 }
 
-// Kasih jarak baris kosong
 fputcsv($output, array(''));
 fputcsv($output, array(''));
 
@@ -42,7 +41,7 @@ while ($row = mysqli_fetch_assoc($result_non)) {
 }
 
 // Catat ke Log Aktivitas (PBI-037)
-add_log($conn, "Backup Data", "Berhasil melakukan backup data ke format Excel/CSV lewat hosting.");
+add_log($conn, "Backup Data", "Admin melakukan pencadangan data ke format Excel/CSV");
 
 fclose($output);
 exit();

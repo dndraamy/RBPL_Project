@@ -99,7 +99,14 @@ $title = "Log Aktivitas";
                                 "<?= htmlspecialchars($l['details']) ?>"
                             </p>
                             <p class="text-gray-400 text-xs mt-2 font-medium">
-                                <?= date('H:i', strtotime($l['timestamp'])) ?> WIB
+                                <?php 
+                                    // Membuat objek waktu dari DB (UTC)
+                                    $date = new DateTime($l['timestamp']);
+                                    // Menambah 14 jam agar menjadi WIB
+                                    $date->modify('+14 hours');
+                                    // Menampilkan format jam:menit
+                                    echo $date->format('H:i'); 
+                                ?> WIB
                             </p>
                         </div>
                     <?php endwhile; ?>
