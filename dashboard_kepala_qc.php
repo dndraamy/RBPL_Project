@@ -7,6 +7,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'kepala') {
     exit();
 }
 
+// --- LOGIKA AGREGASI DATA ---
 // Total Laporan Cacat
 $res_cacat = mysqli_query($conn, "SELECT COUNT(*) as total FROM laporancacat");
 $count_cacat = mysqli_fetch_assoc($res_cacat)['total'];
@@ -15,7 +16,7 @@ $count_cacat = mysqli_fetch_assoc($res_cacat)['total'];
 $res_non = mysqli_query($conn, "SELECT COUNT(*) as total FROM laporannoncacat");
 $count_non = mysqli_fetch_assoc($res_non)['total'];
 
-// Total Status 'Menunggu'
+// Total Status 'Menunggu' (PBI-039 Fokus utama Kepala QC)
 $res_wait_c = mysqli_query($conn, "SELECT COUNT(*) as total FROM laporancacat WHERE status = 'menunggu'");
 $total_menunggu = mysqli_fetch_assoc($res_wait_c)['total'];
 
@@ -62,7 +63,7 @@ $subtitle = "Kepala QC Inspection - " . $_SESSION['nama'];
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-4 -ml-0.5 flex items-center gap-4 shadow-[0_4px_15px_rgba(0,0,0,0.1)]">
+            <div class="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-[0_4px_15px_rgba(0,0,0,0.1)] border-l-4 border-utama">
                 <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stroke-utama">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" x2="12" y1="8" y2="12"></line>
@@ -74,14 +75,14 @@ $subtitle = "Kepala QC Inspection - " . $_SESSION['nama'];
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-4 -ml-1 flex items-center gap-4 shadow-[0_4px_15px_rgba(0,0,0,0.1)]">
-                <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stroke-utama">
+            <div class="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-[0_4px_15px_rgba(0,0,0,0.1)] border-l-4 border-orange-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stroke-orange-500">
                     <path d="M12 17h.01"></path>
                     <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"></path>
                     <path d="M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"></path>
                 </svg>
                 <div>
-                    <p class="text-xs font-bold text-gray-400">Total Menunggu Tindak Lanjut</p>
+                    <p class="text-xs font-bold text-orange-500">Menunggu Tindak Lanjut</p>
                     <p class="text-3xl font-bold text-black leading-none"><?= $total_menunggu; ?></p>
                 </div>
             </div>
@@ -131,7 +132,7 @@ $subtitle = "Kepala QC Inspection - " . $_SESSION['nama'];
                                     if ($row['status'] == 'ditolak') $status_class = "text-red-600";
                                     ?>
                                     <span class="inline-block px-2 py-1 rounded-md text-[10px] font-semibold tracking-wide <?= $status_class ?>">
-                                        <?= $row['status']; ?>
+                                        <?= strtoupper($row['status']); ?>
                                     </span>
                                 </td>
                             </tr>
@@ -145,11 +146,7 @@ $subtitle = "Kepala QC Inspection - " . $_SESSION['nama'];
                                 <td class="py-4 px-4 font-bold text-utama text-center"><?= $row['id']; ?></td>
                                 <td class="py-4 px-2 font-medium truncate"><?= $row['batch_number']; ?></td>
                                 <td class="py-4 px-2 text-gray-500 italic truncate"><?= $row['deskripsi'] ?: '-'; ?></td>
-                                <td class="py-4 px-4 text-center">
-                                    <span class="px-3 py-1 rounded-md text-[9px] font-black uppercase">
-                                        -
-                                    </span>
-                                </td>
+                                <td class="py-4 px-4 text-center text-gray-400 font-bold">-</td>
                             </tr>
                         <?php endwhile; ?>
                     </tbody>
@@ -162,7 +159,6 @@ $subtitle = "Kepala QC Inspection - " . $_SESSION['nama'];
                 <div class="h-20"></div>
             </div>
         </div>
-
     </main>
 
     <script>
@@ -171,7 +167,6 @@ $subtitle = "Kepala QC Inspection - " . $_SESSION['nama'];
             const tabs = document.querySelectorAll('.tab-btn');
             let hasData = false;
 
-            // Update Tampilan Tab
             tabs.forEach(tab => {
                 if (tab.id === `tab-${type}`) {
                     tab.classList.remove('opacity-70', 'border-transparent');
@@ -183,7 +178,6 @@ $subtitle = "Kepala QC Inspection - " . $_SESSION['nama'];
                 }
             });
 
-            // Filter Baris Tabel
             rows.forEach(row => {
                 if (row.getAttribute('data-type') === type) {
                     row.classList.remove('hidden');
@@ -193,7 +187,6 @@ $subtitle = "Kepala QC Inspection - " . $_SESSION['nama'];
                 }
             });
 
-            // Handle State Kosong
             const emptyState = document.getElementById('empty-state');
             if (!hasData) {
                 emptyState.classList.remove('hidden');
@@ -203,5 +196,4 @@ $subtitle = "Kepala QC Inspection - " . $_SESSION['nama'];
         }
     </script>
 </body>
-
 </html>
