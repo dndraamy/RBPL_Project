@@ -1,35 +1,49 @@
 <?php
-require_once 'auth.php';
+include 'auth.php';
 
-// Hanya Admin yang boleh melakukan backup
+// Pastikan hanya Admin yang bisa akses proses ini
 if ($_SESSION['jabatan'] !== 'admin') {
-    header("Location: dashboard_admin.php");
+    header("Location: login.php?pesan=hak_akses_ditolak");
     exit();
 }
 
-// Konfigurasi Database
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db   = "divqc_db";
+// Set nama file: Backup_QC_Tanggal_Jam.csv
+$filename = "Backup_Sistem_QC_" . date('d-m-Y_H-i') . ".csv";
 
-// Nama file hasil backup
-$nama_file = "Backup_Database_QC_" . date('Y-m-d_H-i-s') . ".sql";
+// Header untuk memaksa browser mengunduh file
+header('Content-Type: text/csv; charset=utf-8');
+header('Content-Disposition: attachment; filename=' . $filename);
 
-// Lokasi penyimpanan sementara di XAMPP
-// Pastikan path bin mysql benar (biasanya di C:\xampp\mysql\bin\mysqldump)
-$dump_path = "C:\\xampp\\mysql\\bin\\mysqldump";
-$command = "$dump_path --user=$user --password=$pass --host=$host $db";
+// Buka stream output
+$output = fopen('php://output', 'w');
 
-// Header agar browser mendownload file sebagai SQL
-header('Content-Type: application/octet-stream');
-header('Content-Disposition: attachment; filename="' . $nama_file . '"');
+// --- BAGIAN 1: DATA LAPORAN CACAT ---
+fputcsv($output, array('DATA LAPORAN CACAT'));
+fputcsv($output, array('ID', 'No Batch', 'Jenis Udang', 'Tanggal', 'Jumlah', 'Kriteria Cacat', 'Tingkat Keparahan', 'Status'));
 
-// Jalankan perintah backup
-passthru($command);
+$query_cacat = "SELECT id, batch_number, jenis_udang, tanggal, kuantitas, kriteria_cacat, keparahan, status FROM laporancacat ORDER BY id ASC";
+$result_cacat = mysqli_query($conn, $query_cacat);
+while ($row = mysqli_fetch_assoc($result_cacat)) {
+    fputcsv($output, $row);
+}
 
-// Catat ke Log Aktivitas (Integrasi Sprint 8)
-add_log($conn, "Backup Data", "Admin melakukan pencadangan database sistem.");
+// Kasih jarak baris kosong
+fputcsv($output, array(''));
+fputcsv($output, array(''));
 
+// --- BAGIAN 2: DATA LAPORAN NON-CACAT ---
+fputcsv($output, array('DATA LAPORAN NON-CACAT'));
+fputcsv($output, array('ID', 'No Batch', 'Jenis Udang', 'Tanggal', 'Jumlah', 'Keterangan'));
+
+$query_non = "SELECT id, batch_number, jenis_udang, tanggal, kuantitas, deskripsi FROM laporannoncacat ORDER BY id ASC";
+$result_non = mysqli_query($conn, $query_non);
+while ($row = mysqli_fetch_assoc($result_non)) {
+    fputcsv($output, $row);
+}
+
+// Catat ke Log Aktivitas (PBI-037)
+add_log($conn, "Backup Data", "Berhasil melakukan backup data ke format Excel/CSV lewat hosting.");
+
+fclose($output);
 exit();
 ?>
