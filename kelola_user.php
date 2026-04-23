@@ -1,6 +1,6 @@
 <?php
 include 'auth.php';
-require_once 'config.php';
+require_once 'auth.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'admin') {
     header("Location: login.php?pesan=belum_login");
