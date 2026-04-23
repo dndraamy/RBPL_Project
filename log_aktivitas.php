@@ -6,6 +6,21 @@ if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'admin') {
     header("Location: login.php?pesan=belum_login");
     exit();
 }
+
+// Fitur Filter Tanggal (PBI-041)
+$filter_tgl = isset($_GET['filter_tanggal']) ? $_GET['filter_tanggal'] : date('Y-m-d');
+
+// Ambil data log asli dari database (PBI-041)
+// Kita JOIN dengan tabel users agar bisa memunculkan nama_lengkap pelakunya
+$query_log = mysqli_query($conn, "
+    SELECT activity_logs.*, users.nama_lengkap 
+    FROM activity_logs 
+    JOIN users ON activity_logs.user_id = users.id 
+    WHERE DATE(activity_logs.timestamp) = '$filter_tgl'
+    ORDER BY activity_logs.timestamp DESC
+");
+
+$title = "Log Aktivitas";
 ?>
 
 <!DOCTYPE html>
@@ -55,39 +70,45 @@ if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'admin') {
         <div class="max-w-2xl mx-auto">
             <h2 class="text-center text-utama text-2xl font-bold mb-8">Log Aktivitas</h2>
 
-            <div class="mb-8 max-w-2xl mx-auto">
+            <form method="GET" action="" class="mb-8 max-w-2xl mx-auto">
                 <div class="relative group">
                     <input type="date" name="filter_tanggal" id="filter_tanggal"
-                        value="2025-11-28"
+                        value="<?= $filter_tgl ?>"
+                        onchange="this.form.submit()"
                         class="w-full px-4 py-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-utama/20 shadow-[0_2px_6px_rgba(0,0,0,0.1)] text-gray-700 font-medium bg-white appearance-none cursor-pointer">
 
                     <div class="absolute right-4 top-1/2 -translate-y-1/2 text-utama pointer-events-none">
                         <i data-lucide="calendar" class="w-6 h-6"></i>
                     </div>
                 </div>
-            </div>
+            </form>
 
             <div class="bg-[#E5E5E5] rounded-[32px] p-4 space-y-3">
-                <h3 class="text-utama font-bold text-lg px-2 mb-4 border-b border-gray-300 pb-2">Aktivitas Hari Ini</h3>
+                <h3 class="text-utama font-bold text-lg px-2 mb-4 border-b border-gray-300 pb-2">
+                    Riwayat: <?= date('d M Y', strtotime($filter_tgl)) ?>
+                </h3>
 
-                <?php
-                // Data dummy simulasi log
-                $logs = [
-                    ['user' => 'Anak Budi', 'aksi' => 'Menambahkan Laporan', 'tgl' => '28 nov 2025', 'jam' => '12 : 31'],
-                    ['user' => 'Adik Budi', 'aksi' => 'Menambahkan Laporan', 'tgl' => '28 nov 2025', 'jam' => '11 : 31'],
-                    ['user' => 'Bapak Budi', 'aksi' => 'Memperbarui Status', 'tgl' => '28 nov 2025', 'jam' => '14 : 31'],
-                ];
-
-                foreach ($logs as $l): ?>
-                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 transition-transform active:scale-[0.99]">
-                        <p class="font-bold text-gray-800 text-lg leading-tight">
-                            <?= $l['user'] ?> <?= $l['aksi'] ?>
-                        </p>
-                        <p class="text-gray-400 text-sm mt-1 font-medium">
-                            <?= $l['tgl'] ?>, <?= $l['jam'] ?>
-                        </p>
+                <?php if (mysqli_num_rows($query_log) > 0): ?>
+                    <?php while ($l = mysqli_fetch_assoc($query_log)): ?>
+                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 transition-transform active:scale-[0.99]">
+                            <p class="font-bold text-gray-800 text-lg leading-tight">
+                                <span class="text-utama"><?= htmlspecialchars($l['nama_lengkap']) ?></span> 
+                                <?= htmlspecialchars($l['action']) ?>
+                            </p>
+                            <p class="text-gray-600 text-sm mt-1 italic">
+                                "<?= htmlspecialchars($l['details']) ?>"
+                            </p>
+                            <p class="text-gray-400 text-xs mt-2 font-medium">
+                                <?= date('H:i', strtotime($l['timestamp'])) ?> WIB
+                            </p>
+                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <div class="text-center py-10 text-gray-500">
+                        <i data-lucide="clipboard-list" class="w-12 h-12 mx-auto mb-2 opacity-20"></i>
+                        <p>Tidak ada aktivitas pada tanggal ini.</p>
                     </div>
-                <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </main>
