@@ -1,26 +1,49 @@
 <?php
 include 'auth.php';
 
+// 1. KEAMANAN: Cek apakah sudah login
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php?pesan=belum_login");
+    exit();
+}
+
 $title = "Detail Laporan";
 $subtitle = "Hasil Inspeksi Quality Control";
 
+// Ambil parameter dari URL
 $id = mysqli_real_escape_string($conn, $_GET['id']);
 $type = mysqli_real_escape_string($conn, $_GET['type']);
 $role = $_SESSION['jabatan'];
 
-// LOGIKA UPDATE STATUS & CATATAN (Hanya untuk Kepala QC)
+// ============================================================
+// START: PBI-039 (LOGIKA UPDATE STATUS & LOG OLEH KEPALA QC)
+// ============================================================
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['proses_laporan']) && $role === 'kepala') {
     $status_baru = mysqli_real_escape_string($conn, $_POST['status']);
     $catatan_kepala = mysqli_real_escape_string($conn, $_POST['catatan_kepala']);
 
+    // Update database
     $sql_update = "UPDATE laporancacat SET status = '$status_baru', catatan_kepala = '$catatan_kepala' WHERE id = '$id'";
+    
     if (mysqli_query($conn, $sql_update)) {
+        // Ambil info batch untuk detail log
+        $info_query = mysqli_query($conn, "SELECT batch_number FROM laporancacat WHERE id = '$id'");
+        $info = mysqli_fetch_assoc($info_query);
+        $batch = $info['batch_number'];
+
+        // Catat ke Log Aktivitas (IKKE - PBI-039)
+        $details = "Kepala QC telah mengubah status laporan Batch: $batch menjadi " . strtoupper($status_baru);
+        add_log($conn, "Keputusan QC", $details);
+
         header("Location: dashboard_kepala_qc.php?status=update_sukses");
         exit();
     }
 }
+// ============================================================
+// END: PBI-039
+// ============================================================
 
-// Ambil Data
+// 2. QUERY: Ambil Data untuk ditampilkan di UI
 if ($type === 'cacat') {
     $query = "SELECT l.*, u.nama_lengkap as staff FROM laporancacat l 
               JOIN users u ON l.id_user = u.id WHERE l.id = '$id'";
@@ -45,6 +68,7 @@ if (!$data) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail #<?= $data['id'] ?></title>
     <?php include 'ui_config.php'; ?>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-utama font-sans antialiased">
@@ -55,12 +79,9 @@ if (!$data) {
         <div class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-3">
                 <?php
-                $back_link = 'dashboard_staff_qc.php'; // Default fallback
-                if ($role === 'kepala') {
-                    $back_link = 'dashboard_kepala_qc.php';
-                } elseif ($role === 'manajer' || $role === 'supervisor') {
-                    $back_link = 'dashboard_manajer_supervisor.php';
-                }
+                $back_link = 'dashboard_staff_qc.php'; 
+                if ($role === 'kepala') { $back_link = 'dashboard_kepala_qc.php'; } 
+                elseif ($role === 'manajer' || $role === 'supervisor') { $back_link = 'dashboard_manajer_supervisor.php'; }
                 ?>
 
                 <a href="<?= $back_link ?>" class="bg-gray-100 text-utama w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 transition-all">
@@ -89,7 +110,7 @@ if (!$data) {
                     <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Tanggal</p>
                     <p class="text-sm font-bold text-black"><?= date('d/m/y', strtotime($data['tanggal'])) ?></p>
                 </div>
-                <div class="border-b border-gray-200 sm:border-0 pb-3 sm:pb-0">
+                <div>
                     <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Jenis Udang</p>
                     <p class="text-sm font-bold text-black"><?= $data['jenis_udang'] ?></p>
                 </div>
@@ -100,11 +121,9 @@ if (!$data) {
             </div>
 
             <?php if ($type === 'cacat'): ?>
-                <div class="flex flex-col gap-3">
-                    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-2xl">
-                        <p class="text-[10px] text-red-400 font-bold uppercase">Tingkat Keparahan</p>
-                        <p class="text-md font-bold text-red-800"><?= $data['tingkat_keparahan'] ?? $data['keparahan'] ?></p>
-                    </div>
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-2xl">
+                    <p class="text-[10px] text-red-400 font-bold uppercase">Tingkat Keparahan</p>
+                    <p class="text-md font-bold text-red-800"><?= $data['keparahan'] ?></p>
                 </div>
 
                 <div class="pt-2">
@@ -115,13 +134,7 @@ if (!$data) {
                 </div>
 
                 <div class="mt-4 pt-6 border-t-2 border-gray-100">
-                    <h3 class="text-sm font-bold text-black mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-utama">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                        Tinjauan Kepala QC
-                    </h3>
+                    <h3 class="text-sm font-bold text-black mb-4 flex items-center gap-2">Tinjauan Kepala QC</h3>
 
                     <?php if ($role === 'kepala'): ?>
                         <form action="" method="POST" class="space-y-4">
@@ -140,23 +153,15 @@ if (!$data) {
                                 </div>
                             </div>
                             <div>
-                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Catatan/Instruksi Kepala</label>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Catatan/Instruksi</label>
                                 <textarea name="catatan_kepala" rows="3" class="w-full mt-1 p-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:border-utama transition-all" placeholder="Tulis instruksi..."><?= $data['catatan_kepala'] ?></textarea>
                             </div>
                             <button type="submit" class="w-full bg-utama text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all">Simpan Keputusan</button>
                         </form>
                     <?php else: ?>
-                        <div class="space-y-4">
-                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Status Akhir</p>
-                                <p class="text-sm font-bold <?= $data['status'] == 'diterima' ? 'text-green-600' : 'text-red-600' ?>">
-                                    <?= strtoupper($data['status']) ?>
-                                </p>
-                            </div>
-                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Instruksi Kepala</p>
-                                <p class="text-sm text-gray-700 font-medium"><?= $data['catatan_kepala'] ?: 'Belum ada catatan dari kepala.' ?></p>
-                            </div>
+                        <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Instruksi Kepala</p>
+                            <p class="text-sm text-gray-700 font-medium"><?= $data['catatan_kepala'] ?: 'Belum ada catatan.' ?></p>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -164,12 +169,6 @@ if (!$data) {
             <?php else: ?>
                 <div class="bg-blue-50 p-4 rounded-2xl text-center border border-blue-100">
                     <p class="text-sm font-bold text-blue-600">STATUS: Produk Aman / Normal</p>
-                </div>
-                <div class="pt-2">
-                    <h3 class="text-[10px] font-bold text-gray-400 uppercase mb-2">Keterangan Tambahan</h3>
-                    <div class="bg-gray-50 p-4 rounded-2xl border border-dashed border-gray-200">
-                        <p class="text-sm text-gray-600 italic">"<?= $data['deskripsi'] ?: 'Laporan pemeriksaan rutin, kualitas produk sesuai standar.' ?>"</p>
-                    </div>
                 </div>
             <?php endif; ?>
 
@@ -185,5 +184,4 @@ if (!$data) {
         </div>
     </main>
 </body>
-
 </html>
