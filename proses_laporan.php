@@ -17,15 +17,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $query = "INSERT INTO laporancacat (id_user, batch_number, jenis_udang, tanggal, kuantitas, kriteria_cacat, keparahan, deskripsi, status) 
                   VALUES ('$id_user', '$batch_number', '$jenis_udang', '$tanggal', '$kuantitas', '$kriteria', '$keparahan', '$deskripsi', 'menunggu')";
+        
+        // Label untuk log
+        $log_action = "Input Laporan Cacat";
     } else {
         // Ambil data khusus laporan non-cacat
         $query = "INSERT INTO laporannoncacat (id_user, batch_number, jenis_udang, tanggal, kuantitas, deskripsi) 
                   VALUES ('$id_user', '$batch_number', '$jenis_udang', '$tanggal', '$kuantitas', '$deskripsi')";
+        
+        // Label untuk log
+        $log_action = "Input Laporan Non-Cacat";
     }
 
     if (mysqli_query($conn, $query)) {
+        // ==========================================
+        // START: PBI-038 (INTEGRASI LOGGER OLEH IKKE)
+        // ==========================================
+        $details = "Staff QC menginput laporan " . ($type === 'cacat' ? "cacat" : "non-cacat") . " untuk Batch: " . $batch_number;
+        add_log($conn, $log_action, $details);
+        // ==========================================
+        // END: PBI-038
+        // ==========================================
+
         header("Location: dashboard_staff_qc.php?pesan=sukses_simpan");
     } else {
         echo "Error: " . $query . "<br>" . mysqli_error($conn);
     }
 }
+?>
