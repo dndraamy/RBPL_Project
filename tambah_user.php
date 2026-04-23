@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'admin') {
 }
 
 $title = "Tambah User";
-$subtitle = "Lorem Ipsum";
+$subtitle = "Manajemen Akses Sistem";
 ?>
 
 <!DOCTYPE html>
@@ -30,12 +30,25 @@ $subtitle = "Lorem Ipsum";
     <main class="bg-white rounded-t-[40px] mt-[20px] min-h-[calc(100vh-80px)] px-6 pt-10 pb-16">
         <div class="max-w-2xl mx-auto">
 
-            <form action="proses_tambah_user.php" method="POST" class="space-y-5">
+            <?php if (isset($_GET['status']) && $_GET['status'] == 'error_nip'): ?>
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-r-xl shadow-sm" role="alert">
+                    <p class="font-bold">Gagal Menyimpan</p>
+                    <p>NIP yang Anda masukkan sudah terdaftar. Silakan gunakan NIP lain.</p>
+                </div>
+            <?php endif; ?>
 
-                <input type="text" name="nama" placeholder="Nama Lengkap" required
+            <form action="proses_user.php?aksi=tambah" method="POST" class="space-y-5">
+
+                <input type="text" name="nama_lengkap" placeholder="Nama Lengkap" required
                     class="w-full p-4 border border-gray-300 rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-utama transition-all">
 
                 <input type="text" name="nip" placeholder="NIP" required
+                    class="w-full p-4 border border-gray-300 rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-utama transition-all">
+                
+                <input type="email" name="email" placeholder="Alamat Email" required
+                    class="w-full p-4 border border-gray-300 rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-utama transition-all">
+
+                <input type="password" name="password" placeholder="Kata Sandi Awal" required
                     class="w-full p-4 border border-gray-300 rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-utama transition-all">
 
                 <div class="relative">
@@ -45,6 +58,7 @@ $subtitle = "Lorem Ipsum";
                         <option value="manajer">Manajer</option>
                         <option value="supervisor">Supervisor</option>
                         <option value="staff qc">Staff QC</option>
+                        <option value="kepala">Kepala QC</option>
                     </select>
                     <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-utama">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -56,7 +70,7 @@ $subtitle = "Lorem Ipsum";
                 <input type="tel" name="no_telp" placeholder="No Telp"
                     class="w-full p-4 border border-gray-300 rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-utama transition-all">
 
-                <textarea name="alamat" placeholder="Alamat" rows="3"
+                <textarea name="alamat" placeholder="Alamat Lengkap" rows="3"
                     class="w-full p-4 border border-gray-300 rounded-2xl shadow-[0_2px_6px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-utama resize-none transition-all"></textarea>
 
                 <div class="pt-10 flex items-center gap-4">
