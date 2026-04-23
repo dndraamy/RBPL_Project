@@ -7,22 +7,23 @@ if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'admin') {
     exit();
 }
 
-// Logika membaca file backup asli di folder
-$folder_backup = "backups/";
-if (!is_dir($folder_backup)) { mkdir($folder_backup, 0777, true); }
+// --- MODIFIKASI DISINI: Ambil data dari Database Log ---
+// Cari kapan terakhir kali aksi 'Backup Data' dilakukan
+$query_status = "SELECT waktu FROM log_aktivitas WHERE aksi = 'Backup Data' ORDER BY id DESC LIMIT 1";
+$res_status = mysqli_query($conn, $query_status);
+$row_status = mysqli_fetch_assoc($res_status);
 
-$files = glob($folder_backup . "*.sql");
-// Urutkan berdasarkan waktu file terbaru (Descending)
-array_multisort(array_map('filemtime', $files), SORT_DESC, $files);
-
-// Data untuk Status Terakhir
 $last_made = "Belum ada";
 $last_size = "0 MB";
 
-if (!empty($files)) {
-    $last_made = date("d-m-Y, H:i", filemtime($files[0])) . " WIB";
-    $last_size = round(filesize($files[0]) / 1024 / 1024, 2) . " MB";
+if ($row_status) {
+    $last_made = date("d-m-Y, H:i", strtotime($row_status['waktu'])) . " WIB";
+    $last_size = "Variabel (CSV)"; // Karena filenya langsung unduh, ukurannya fleksibel
 }
+
+// Ambil 5 riwayat backup terakhir dari log untuk ditampilkan di bawah
+$query_history = "SELECT waktu, rincian FROM log_aktivitas WHERE aksi = 'Backup Data' ORDER BY id DESC LIMIT 5";
+$res_history = mysqli_query($conn, $query_history);
 ?>
 
 <!DOCTYPE html>
@@ -49,7 +50,7 @@ if (!empty($files)) {
             </a>
 
             <div class="flex items-center gap-4">
-                <a href="login.php" class="hover:opacity-80 transition-opacity active:scale-90">
+                <a href="logout.php" class="hover:opacity-80 transition-opacity active:scale-90">
                     <i data-lucide="log-out" class="w-6 h-6"></i>
                 </a>
                 <button class="hover:opacity-80 transition-opacity active:scale-90">
@@ -69,7 +70,7 @@ if (!empty($files)) {
                 <div class="space-y-2 mb-6">
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-gray-700">Terakhir Dibuat :</span>
-                        <span class="<?= empty($files) ? 'text-gray-400' : 'text-emerald-500' ?> font-bold"><?= $last_made ?></span>
+                        <span class="<?= ($last_made == "Belum ada") ? 'text-gray-400' : 'text-emerald-500' ?> font-bold"><?= $last_made ?></span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-gray-700">Ukuran File :</span>
@@ -86,29 +87,27 @@ if (!empty($files)) {
             </div>
 
             <div class="bg-[#E5E5E5] rounded-[32px] p-4 space-y-3 shadow-inner">
-                <h3 class="text-utama font-bold text-lg px-2 mb-2">Riwayat Back Up</h3>
+                <h3 class="text-utama font-bold text-lg px-2 mb-2">Riwayat Back Up (Cloud)</h3>
 
-                <?php if (!empty($files)): ?>
-                    <?php foreach ($files as $file): 
-                        $nama_file = basename($file);
-                        $ukuran = round(filesize($file) / 1024 / 1024, 2) . " MB";
-                        $waktu = date("d M Y, H:i", filemtime($file));
+                <?php if (mysqli_num_rows($res_history) > 0): ?>
+                    <?php while ($log = mysqli_fetch_assoc($res_history)): 
+                        $waktu_log = date("d M Y, H:i", strtotime($log['waktu']));
                     ?>
-                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex justify-between items-center transition-transform active:scale-[0.98] cursor-pointer hover:bg-gray-50">
+                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex justify-between items-center transition-transform active:scale-[0.98]">
                             <div>
-                                <p class="font-bold text-gray-800 text-md leading-tight"><?= $nama_file ?></p>
+                                <p class="font-bold text-gray-800 text-md leading-tight">Backup_Sistem_QC.csv</p>
                                 <p class="text-gray-400 text-sm font-medium">
-                                    <?= $waktu ?> WIB | <?= $ukuran ?>
+                                    <?= $waktu_log ?> WIB | Exported Successfully
                                 </p>
                             </div>
-                            <a href="<?= $file ?>" download class="text-utama hover:scale-110 transition-transform">
-                                <i data-lucide="file-down" class="w-5 h-5"></i>
-                            </a>
+                            <div class="text-emerald-500">
+                                <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            </div>
                         </div>
-                    <?php endforeach; ?>
+                    <?php endwhile; ?>
                 <?php else: ?>
                     <div class="text-center py-6 text-gray-400 italic">
-                        Belum ada riwayat backup database.
+                        Belum ada riwayat backup tercatat.
                     </div>
                 <?php endif; ?>
             </div>
@@ -119,5 +118,4 @@ if (!empty($files)) {
         lucide.createIcons();
     </script>
 </body>
-
 </html>
