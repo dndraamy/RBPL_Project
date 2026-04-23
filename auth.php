@@ -49,4 +49,24 @@ if (isset($_POST['login'])) {
         exit();
     }
 }
+
+// ==========================================
+// START: PBI-037 (GLOBAL LOGGER BY IKKE)
+// Fungsi untuk mencatat setiap aktivitas penting
+// ==========================================
+function add_log($conn, $action, $details) {
+    // Ambil user_id dari session yang sedang aktif
+    if (isset($_SESSION['user_id'])) {
+        $user_id = $_SESSION['user_id'];
+        $action = mysqli_real_escape_string($conn, $action);
+        $details = mysqli_real_escape_string($conn, $details);
+        
+        $sql = "INSERT INTO activity_logs (user_id, action, details) 
+                VALUES ('$user_id', '$action', '$details')";
+        mysqli_query($conn, $sql);
+    }
+}
+// ==========================================
+// END: PBI-037
+// ==========================================
 ?>
