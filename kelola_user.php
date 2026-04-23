@@ -1,11 +1,13 @@
 <?php
 include 'auth.php';
+require_once 'config.php';
 
-// Cek apakah sudah login dan apakah jabatannya 'admin'
 if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'admin') {
     header("Location: login.php?pesan=belum_login");
     exit();
 }
+
+$query_users = mysqli_query($conn, "SELECT * FROM users ORDER BY id DESC");
 ?>
 
 <!DOCTYPE html>
@@ -16,6 +18,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'admin') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola User</title>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <?php include 'ui_config.php'; ?>
 </head>
 
@@ -52,7 +55,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'admin') {
 
     <main class="bg-white rounded-t-[40px] mt-[10px] min-h-[calc(100vh-120px)] px-4 pt-10 pb-10">
         <div class="max-w-2xl mx-auto">
-            <h2 class="text-center text-utama text-2xl font-bold mb-8">Kelola User</h2>
+            <h2 class="text-center text-utama text-2xl font-bold mb-4">Kelola User</h2>
+
+            <?php if (isset($_GET['status'])): ?>
+                <?php if ($_GET['status'] == 'sukses_tambah'): ?>
+                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-3 mb-6 rounded-r text-sm">Pengguna berhasil ditambahkan.</div>
+                <?php elseif ($_GET['status'] == 'sukses_hapus'): ?>
+                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-3 mb-6 rounded-r text-sm">Pengguna berhasil dihapus.</div>
+                <?php elseif ($_GET['status'] == 'error_hapus_diri_sendiri'): ?>
+                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-6 rounded-r text-sm">Gagal! Anda tidak bisa menghapus akun Anda sendiri yang sedang aktif.</div>
+                <?php endif; ?>
+            <?php endif; ?>
 
             <div class="flex items-center gap-4 mb-8">
                 <div class="relative flex-1">
@@ -71,24 +84,25 @@ if (!isset($_SESSION['user_id']) || $_SESSION['jabatan'] !== 'admin') {
             <div class="bg-[#E5E5E5] rounded-[32px] p-4 space-y-3">
                 <h3 class="text-utama font-bold text-lg px-2 mb-4">Daftar Pengguna Aktif</h3>
 
-                <?php
-                $users = [
-                    ['nama' => 'Bapak Budi', 'email' => 'budibpk@gmail.com', 'role' => 'Manajer'],
-                    ['nama' => 'Ibu Budi', 'email' => 'ibBudi@gmail.com', 'role' => 'Kepala QC'],
-                    ['nama' => 'Anak Budi', 'email' => 'anakbudii@gmail.com', 'role' => 'Staff QC'],
-                    ['nama' => 'Kakak Budi', 'email' => 'kkbudii@gmail.com', 'role' => 'Staff QC'],
-                    ['nama' => 'Adik Budi', 'email' => 'adbudi@gmail.com', 'role' => 'Staff QC'],
-                    ['nama' => 'Ponakan Budi', 'email' => 'pkbudi@gmail.com', 'role' => 'Supervisor'],
-                ];
-
-                foreach ($users as $u): ?>
-                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 transition-transform active:scale-[0.98]">
-                        <p class="font-bold text-gray-800 text-lg leading-tight"><?= $u['nama'] ?></p>
-                        <p class="text-gray-500 text-sm">
-                            <?= $u['email'] ?> | <span class="text-gray-400"><?= $u['role'] ?></span>
-                        </p>
-                    </div>
-                <?php endforeach; ?>
+                <?php if (mysqli_num_rows($query_users) > 0): ?>
+                    <?php while ($u = mysqli_fetch_assoc($query_users)): ?>
+                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 transition-transform active:scale-[0.98] flex justify-between items-center">
+                            <div>
+                                <p class="font-bold text-gray-800 text-lg leading-tight"><?= htmlspecialchars($u['nama_lengkap']) ?></p>
+                                <p class="text-gray-500 text-sm">
+                                    NIP: <?= htmlspecialchars($u['nip']) ?> | <?= htmlspecialchars($u['email']) ?> <br>
+                                    <span class="text-gray-400 font-semibold"><?= strtoupper(htmlspecialchars($u['jabatan'])) ?></span>
+                                </p>
+                            </div>
+                            
+                            <a href="proses_user.php?aksi=hapus&id=<?= $u['id'] ?>" onclick="return confirm('Yakin ingin menghapus pengguna <?= htmlspecialchars($u['nama_lengkap']) ?>?')" class="text-red-500 bg-red-50 p-2 rounded-xl hover:bg-red-100 transition-colors">
+                                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                            </a>
+                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <p class="text-center text-gray-500 py-4">Belum ada pengguna terdaftar.</p>
+                <?php endif; ?>
             </div>
         </div>
     </main>
