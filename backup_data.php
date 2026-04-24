@@ -16,7 +16,7 @@ $row_status = mysqli_fetch_assoc($res_status);
 $last_made = "Belum ada";
 
 if ($row_status) {
-    $last_made = date("d-m-Y, H:i", strtotime($row_status['timestamp'])) . " WIB";
+    $last_made = date("d-m-Y, H:i", strtotime($row_status['timestamp'] . " -14 hours")) . " WIB";
     $last_size = "Variabel (CSV)";
 }
 
@@ -113,7 +113,7 @@ $res_history = mysqli_query($conn, $query_history);
                     </div>
                 <?php endif; ?>
             </div>
-            
+
         </div>
     </main>
 
