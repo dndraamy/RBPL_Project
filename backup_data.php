@@ -91,11 +91,13 @@ $res_history = mysqli_query($conn, $query_history);
 
                 <?php if (mysqli_num_rows($res_history) > 0): ?>
                     <?php while ($log = mysqli_fetch_assoc($res_history)):
-                        $waktu_log = date("d M Y, H:i", strtotime($log['timestamp']));
+                        $timestamp_dikonversi = strtotime($log['timestamp']);
+                        $waktu_log = date("d M Y, H:i", $timestamp_dikonversi);
+                        $nama_file_log = "Backup_Sistem_QC_" . date('d-m-Y_H-i', $timestamp_dikonversi) . ".csv";
                     ?>
                         <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex justify-between items-center transition-transform active:scale-[0.98]">
                             <div>
-                                <p class="font-bold text-gray-800 text-md leading-tight">Backup_Sistem_QC.csv</p>
+                                <p class="font-bold text-gray-800 text-md leading-tight"><?= $nama_file_log ?></p>
                                 <p class="text-gray-400 text-sm font-medium">
                                     <?= $waktu_log ?> WIB | Exported Successfully
                                 </p>

@@ -41,7 +41,7 @@ while ($row = mysqli_fetch_assoc($result_non)) {
 }
 
 // Catat ke Log Aktivitas (PBI-037)
-add_log($conn, "Backup Data", "Admin melakukan pencadangan data ke format Excel/CSV");
+add_log($conn, "Backup Data", "Admin melakukan pencadangan database sistem");
 
 fclose($output);
 exit();

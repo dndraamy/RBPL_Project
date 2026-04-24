@@ -17,30 +17,29 @@ $res_cacat = mysqli_query($conn, "SELECT COUNT(*) as total FROM laporancacat");
 $res_non = mysqli_query($conn, "SELECT COUNT(*) as total FROM laporannoncacat");
 $total_laporan = mysqli_fetch_assoc($res_cacat)['total'] + mysqli_fetch_assoc($res_non)['total'];
 
-// --- PBI-045: IMPLEMENTASI AUTO BACKUP (SCHEDULER) ---
-$folder_backup = "backups/";
-if (!is_dir($folder_backup)) { 
-    mkdir($folder_backup, 0777, true); 
-}
+// Untuk tampilan log backup terakhir
+$query_log = "SELECT timestamp FROM activity_logs 
+              WHERE (details LIKE '%Backup Data%' OR details LIKE '%pencadangan%') 
+              ORDER BY id DESC LIMIT 1";
+$res_log = mysqli_query($conn, $query_log);
+$row_log = mysqli_fetch_assoc($res_log);
 
-$file_hari_ini = $folder_backup . "auto_backup_" . date('Y-m-d') . ".sql";
-$last_backup_display = "Belum Ada";
-$last_backup_time = "-";
+// Tentukan tanggal hari ini
+$today_date = date('d-m-Y');
 
-// Cek file backup terbaru
-$files = glob($folder_backup . "*.sql");
-if ($files) {
-    array_multisort(array_map('filemtime', $files), SORT_DESC, $files);
-    $last_backup_display = date('d-m-Y', filemtime($files[0]));
-    $last_backup_time = date('H.i', filemtime($files[0])) . " WIB";
-}
-
-// Jalankan auto backup jika belum ada
-if (!file_exists($file_hari_ini)) {
-    $dump_path = "C:\\xampp\\mysql\\bin\\mysqldump";
-    // Gunakan variabel koneksi dari auth.php
-    $cmd = "$dump_path --user=$user --password=$pass --host=$host $db > $file_hari_ini";
-    exec($cmd);
+if ($row_log) {
+    $ts_db = strtotime($row_log['timestamp']); 
+    $last_backup_display = date('d-m-Y', $ts_db);
+    $last_backup_time = date('H.i', $ts_db) . " WIB";
+    
+    $today = date('d-m-Y');
+    $yesterday = date('d-m-Y', strtotime('yesterday'));
+    
+    $is_backed_up = (trim($last_backup_display) == $today || trim($last_backup_display) == $yesterday);
+} else {
+    $last_backup_display = "Belum Ada";
+    $last_backup_time = "-";
+    $is_backed_up = false;
 }
 ?>
 
@@ -106,7 +105,15 @@ if (!file_exists($file_hari_ini)) {
         <main class="p-4 md:p-6 bg-gray-50 min-h-screen">
             <div class="max-w-md mx-auto space-y-6 mt-4">
 
-                <div class="bg-white rounded-3xl p-6 md:p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 transform transition hover:scale-105">
+                <?php if (!$is_backed_up): ?>
+                    <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-xl shadow-sm flex items-center gap-3 animate-pulse">
+                        <i data-lucide="alert-circle" class="w-6 h-6"></i>
+                        <div class="text-sm font-bold">Perhatian: Backup hari ini belum dilakukan!</div>
+                    </div>
+                <?php else: ?>
+                <?php endif; ?>
+
+               <div class="bg-white rounded-3xl p-6 md:p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 transform transition hover:scale-105">
                     <p class="text-gray-400 font-bold text-xs mb-2 uppercase tracking-widest">Total User</p>
                     <h2 class="text-4xl md:text-5xl font-bold text-black tracking-tighter"><?= $total_user; ?></h2>
                 </div>
